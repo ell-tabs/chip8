@@ -1,1 +1,0 @@
-python3 chip8.py ROMS/
