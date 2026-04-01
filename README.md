@@ -1,6 +1,6 @@
 # chip8
 
-This is a CHIP-8 emulator built using java and swift.
+This is a CHIP-8 emulator built using python and swift.
 
 Emulator hasn't been finished yet, so the features below will be added after the fact.
 
