@@ -39,51 +39,57 @@ def decode(self, memory, Program_Counter):
         OP_7xkk(self, b, op)
 
     elif a == 8:
-        b &= 0xF
 
-        if b == 0:
-            OP_8xy0(self)
-        elif b == 1:
-            OP_8xy1(self)
-        elif b == 2:
-            OP_8xy2(self)
-        elif b ==3:
-            OP_8xy3(self)
-        elif b == 4:
-            OP_8xy4(self)
-        elif b == 5:
-            OP_8xy5(self)
-        elif b == 6:
-            OP_8xy6(self)
-        elif b == 7:
-            OP_8xy7(self)
-        elif b == 0xE:
-            OP_8xyE(self)
+        if d == 0:
+            OP_8xy0(self, b, c)
+        elif d == 1:
+            OP_8xy1(self, b, c)
+        elif d == 2:
+            OP_8xy2(self, b, c)
+        elif d == 3:
+            OP_8xy3(self, b, c)
+        elif d == 4:
+            OP_8xy4(self, b, c)
+        elif d == 5:
+            OP_8xy5(self, b, c)
+        elif d == 6:
+            OP_8xy6(self, b, c)
+        elif d == 7:
+            OP_8xy7(self, b, c)
+        elif d == 0xE:
+            OP_8xyE(self, b, c)
 
     elif a == 9:
         OP_9xy0(self, b, c)
     elif a == 0xA:
         OP_Annn(self, op)
     elif a == 0xB:
-        OP_Bnnn()
+        OP_Bnnn(self, op)
     elif a == 0xC:
         OP_Cxkk(self, b, op)
     elif a == 0xD:
         OP_Dxyn(self, b, c, d)
 
     elif a == 0xE:
-        b &= 0xF
 
-        if b == 0xE:
-            OP_Ex9E(self)
-        elif b == 0x1:
-            OP_ExA1(self)
-
+        if d == 0xE:
+            OP_Ex9E(self, b)
+        elif d == 0x1:
+            OP_ExA1(self, b)
         pass
     
     elif a == 0xF:
         if op & 0xFF == 0x1E:
             OP_Fx1E(self, b)
-        pass
+        elif op & 0xFF == 0x07:
+            OP_Fx07(self, b)
+        elif op & 0xFF == 0x15:
+            OP_Fx15(self, b)
+        elif op & 0xFF == 0x18:
+            OP_Fx18(self, b)
+        elif op & 0xFF == 0x55:
+            OP_Fx55(self, b)
+        elif op & 0xFF == 0x65:
+            OP_Fx65(self, b)
 
     return byte1,byte2
