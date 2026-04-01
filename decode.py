@@ -83,10 +83,16 @@ def decode(self, memory, Program_Counter):
             OP_Fx1E(self, b)
         elif op & 0xFF == 0x07:
             OP_Fx07(self, b)
+        elif op & 0xFF == 0x0A:
+            OP_Fx0A(self, b)
         elif op & 0xFF == 0x15:
             OP_Fx15(self, b)
         elif op & 0xFF == 0x18:
             OP_Fx18(self, b)
+        elif op & 0xFF == 0x29:
+            OP_Fx29(self, b)
+        elif op & 0xFF == 0x33:
+            OP_Fx33(self, b)
         elif op & 0xFF == 0x55:
             OP_Fx55(self, b)
         elif op & 0xFF == 0x65:

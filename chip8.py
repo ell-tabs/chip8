@@ -7,7 +7,7 @@ import numpy as np
 import random
 import sys
 from pysinewave import SineWave
-sinewave = SineWave(pitch = 20, pitch_per_second = 10)
+sinewave = SineWave(pitch = 20)
 
 class CPU:
     def __init__(self):
@@ -20,13 +20,36 @@ class CPU:
         self.ST = 0
 
         self.screen = np.zeros((32, 64), dtype=np.uint8)
-        self.screen[14][28] = 1 # draws dummy pixel to screen, gets removed one cycle later by CLS
         self.keys = [0] * 16
         self.char = {
     '1': 0x1, '2': 0x2, '3': 0x3, '4': 0xC,
     'q': 0x4, 'w': 0x5, 'e': 0x6, 'r': 0xD,
     'a': 0x7, 's': 0x8, 'd': 0x9, 'f': 0xE,
     'z': 0xA, 'x': 0x0, 'c': 0xB, 'v': 0xF
+}
+        self.rev_char = {
+    '1': 0x1, '2': 0x2, '3': 0x3, '4': 0xC,
+    'q': 0x4, 'w': 0x5, 'e': 0x6, 'r': 0xD,
+    'a': 0x7, 's': 0x8, 'd': 0x9, 'f': 0xE,
+    'z': 0xA, 'x': 0x0, 'c': 0xB, 'v': 0xF
+}
+        self.font_addr = {
+    0x0: 0x50,
+    0x1: 0x55,
+    0x2: 0x5A,
+    0x3: 0x5F,
+    0x4: 0x64,
+    0x5: 0x69,
+    0x6: 0x6E,
+    0x7: 0x73,
+    0x8: 0x78,
+    0x9: 0x7D,
+    0xA: 0x82,
+    0xB: 0x87,
+    0xC: 0x8C,
+    0xD: 0x91,
+    0xE: 0x96,
+    0xF: 0x9B,
 }
 
         self.input_state = {key: 0 for key in self.keys}
@@ -74,20 +97,23 @@ class CPU:
 
         decode(self, self.memory, self.Program_Counter) # decodes and executes the opcode
 
-        for i, val in enumerate(self.V): # prints V[0] - V[F]
-            print(f"V[{i}]: {val}")
+        #for i, val in enumerate(self.V): # prints V[0] - V[F]
+        #    print(f"V[{i}]: {val}")
 
         # prints the values of the program counter, stack pointer, and index
         print("PC:",hex(self.Program_Counter))
         print("I:",hex(self.Index))
 
     def decrement_timers(self):
-        if self.DT > 1:
-            self.DT -=1
-        if self.ST > 1:
+        # Decrement DT if it's above 0
+        if self.DT > 0:
+            self.DT -= 1
+
+        # Decrement ST if it's above 0
+        if self.ST > 0:
             sinewave.play()
             self.ST -= 1
-        elif self.ST <= 1:
+        else:
             sinewave.stop()
             
 
@@ -96,11 +122,11 @@ class CPU:
         for event in events:
             if event.type == pg.KEYDOWN and pg.key.name(event.key) in self.char:
                 self.keys[self.char[pg.key.name(event.key)]] = 1
-                print("event key down",pg.key.name(event.key))
+            elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                exit()
                 #if event.key in self.keys:
             if event.type == pg.KEYUP and pg.key.name(event.key) in self.char:
                 self.keys[self.char[pg.key.name(event.key)]] = 0
-                print("event key up",pg.key.name(event.key))
                 #if event.key in self.keys:
                 #    self.keys[event.key] = 0
 
@@ -117,26 +143,43 @@ FRAMES_PER_SECOND = 60
 
 last_frame_time = time.perf_counter()
 last_timer_time = time.perf_counter()
+CPU_HZ = 500
+TIMER_HZ = 60
+FRAME_HZ = 60
+
+cycle_delay = 1 / CPU_HZ
+timer_delay = 1 / TIMER_HZ
+frame_delay = 1 / FRAME_HZ
+
+last_timer_time = time.perf_counter()
+last_frame_time = time.perf_counter()
 
 while True:
     start = time.perf_counter()
 
+    # Run one CPU instruction
     cpu.detect_input()
     cpu.cycle()
 
-    # Update timers at 60 Hz
-    if time.perf_counter() - last_timer_time >= 1/60:
-        cpu.decrement_timers()
-        last_timer_time += 1/60
+    # Timers at 60 Hz
+    now = time.perf_counter()
+    if now - last_timer_time >= timer_delay:
+        ticks = int((now - last_timer_time) / timer_delay)
+        for _ in range(ticks):
+            cpu.decrement_timers()
+        last_timer_time += ticks * timer_delay
 
-    # Draw screen at 60 FPS
-    if time.perf_counter() - last_frame_time >= frame_delay:
+    print(f"DT: {cpu.DT}, ST: {cpu.ST}")
+
+    # Draw at 60 FPS
+    if now - last_frame_time >= frame_delay:
         cpu.update_screen(window)
         last_frame_time += frame_delay
 
-    # Sleep just enough to maintain instruction speed
+    # Sleep to maintain CPU speed
     elapsed = time.perf_counter() - start
     time.sleep(max(0, cycle_delay - elapsed))
+
 '''
 python3 chip8.py ROMS/
 '''

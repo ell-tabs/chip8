@@ -66,19 +66,24 @@ def OP_8xy3(self, b, c):
     self.Program_Counter += 2
 
 def OP_8xy4(self, b, c):
-    a = self.V[b] + self.V[c]
+    a = (self.V[b] & 0xFF) + (self.V[c] & 0xFF)
+
     if a > 255:
         self.V[0xF] = 1
     else:
         self.V[0xF] = 0
-    self.V[b] =  a & 255
+
+    self.V[b] = a & 0xFF
     self.Program_Counter += 2
 
+
 def OP_8xy5(self, b, c):
-    if self.V[b] >= self.V[c]:
-        self.V[0xf] = 1
-    else: self.V[0xf] = 0
-    self.V[b] = self.V[b] - self.V[c] & 0xFF
+    vx = self.V[b]
+    vy = self.V[c]
+
+    self.V[0xF] = 1 if vx >= vy else 0
+    self.V[b] = (vx - vy) & 0xFF
+
     self.Program_Counter += 2
 
 def OP_8xy6(self, b, c):
@@ -91,10 +96,15 @@ def OP_8xy6(self, b, c):
     self.Program_Counter += 2
 
 def OP_8xy7(self, b, c):
-    if self.V[c] > self.V[b]:
-        self.V[0xf] = 1
-    else: self.V[0xf] = 0
-    self.V[b] = self.V[c] - self.V[b]  & 0xFF
+    vx = self.V[b]
+    vy = self.V[c]
+
+    # VF = 1 if no borrow
+    self.V[0xF] = 1 if vy >= vx else 0
+
+    # store result in Vx
+    self.V[b] = (vy - vx) & 0xFF
+
     self.Program_Counter += 2
 
 def OP_8xyE(self, b, c):
@@ -148,25 +158,42 @@ def OP_Fx07(self, b):
     self.V[b] = self.DT
     self.Program_Counter += 2
 
-def OP_Fx0A(self):
-    pass
+def OP_Fx0A(self, b):
+
+    key_pressed = False
+
+    for i in range(16):
+        if self.keys[i] == 1:
+            self.V[b] = i
+            key_pressed = True
+            break
+
+    if key_pressed == True:
+        self.Program_Counter += 2
 
 def OP_Fx15(self, b):
     self.DT = self.V[b]
     self.Program_Counter += 2
 
 def OP_Fx18(self, b):
-    self.St = self.V[b]
+    self.ST = self.V[b]
     self.Program_Counter += 2
 
 def OP_Fx1E(self, b):
     self.Index += self.V[b]
     self.Program_Counter += 2
 
-def OP_Fx29(self):
-    pass
-def OP_Fx33(self):
-    pass
+def OP_Fx29(self, b):
+    self.Index = self.font_addr[self.V[b]]
+    self.Program_Counter += 2
+
+def OP_Fx33(self, b):
+    value = self.V[b]
+    self.memory[self.Index]   = value // 100
+    self.memory[self.Index+1] = (value // 10) % 10
+    self.memory[self.Index+2] = value % 10
+    self.Program_Counter += 2
+
 def OP_Fx55(self, b):
     for i in range(b + 1):
         self.memory[self.Index + i] = self.V[i]
