@@ -8,7 +8,7 @@ How to Run: Python chip8.py <program>
 
 ### Features TBA:
 
-- ~~sound ~~
+- ~~sound~~
 - gui
 - customizable controls
 - controller mapping
