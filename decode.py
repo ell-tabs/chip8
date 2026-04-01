@@ -19,14 +19,14 @@ def decode(self, memory, Program_Counter):
             OP_00E0(self)
         elif byte2 == 0xEE: # CLR
             OP_00EE(self)
-        else: 
+        elif op == 0x0000: 
             print("invalid opcode!:",hex(byte1+byte2))
             exit()
 
     elif a == 1:
         OP_1nnn(self, op)
     elif a == 2:
-        OP_2nnn(self)
+        OP_2nnn(self, op)
     elif a == 3:
         OP_3xkk(self, b, op)
     elif a == 4:
@@ -67,7 +67,7 @@ def decode(self, memory, Program_Counter):
     elif a == 0xB:
         OP_Bnnn()
     elif a == 0xC:
-        OP_Cxkk()
+        OP_Cxkk(self, b, op)
     elif a == 0xD:
         OP_Dxyn(self, b, c, d)
 
@@ -82,6 +82,8 @@ def decode(self, memory, Program_Counter):
         pass
     
     elif a == 0xF:
+        if op & 0xFF == 0x1E:
+            OP_Fx1E(self, b)
         pass
 
     return byte1,byte2

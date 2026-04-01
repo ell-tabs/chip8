@@ -1,4 +1,5 @@
 # opcodes
+import random
 
 def OP_00E0(self): # clears screen matrix
     print('cleared screen!')
@@ -8,14 +9,15 @@ def OP_00E0(self): # clears screen matrix
     self.Program_Counter += 2
 
 def OP_00EE(self):
-    print('returned from subroutine!')
-    self.Program_Counter += 2
+    self.Program_Counter = self.Stack.pop()
 
 def OP_1nnn(self, a):
     self.Program_Counter = a & 0xFFF
 
-def OP_2nnn(self):
-    pass
+def OP_2nnn(self, op):
+    val = op & 0xFFF
+    self.Stack.append(self.Program_Counter + 2)
+    self.Program_Counter = val
 
 def OP_3xkk(self, x, op):
     val = op & 0xFF
@@ -47,23 +49,23 @@ def OP_7xkk(self, x, op):
     self.V[x] = (self.V[x] + val) & 0xFF
     self.Program_Counter += 2
 
-def OP_8xy0():
+def OP_8xy0(self):
     pass
-def OP_8xy1():
+def OP_8xy1(self):
     pass
-def OP_8xy2():
+def OP_8xy2(self):
     pass
-def OP_8xy3():
+def OP_8xy3(self):
     pass
-def OP_8xy4():
+def OP_8xy4(self):
     pass
-def OP_8xy5():
+def OP_8xy5(self):
     pass
-def OP_8xy6():
+def OP_8xy6(self):
     pass
-def OP_8xy7():
+def OP_8xy7(self):
     pass
-def OP_8xyE():
+def OP_8xyE(self):
     pass
 
 def OP_9xy0(self, x, y):
@@ -77,8 +79,9 @@ def OP_Annn(self, op):
     self.Program_Counter += 2
 def OP_Bnnn():
     pass
-def OP_Cxkk():
-    pass
+def OP_Cxkk(self, x, op):
+    self.V[x] = random.randint(0, 255) & (op & 0xFF)
+    self.Program_Counter += 2
 def OP_Dxyn(self, b, c, d):
     self.V[0xF] = 0
     for row in range(d):
@@ -94,26 +97,27 @@ def OP_Dxyn(self, b, c, d):
                 self.screen[y][x] ^= 1
 
     self.Program_Counter += 2
-def OP_Ex9E():
+def OP_Ex9E(self):
     pass
-def OP_ExA1():
+def OP_ExA1(self):
     pass
 
-def OP_Fx07():
+def OP_Fx07(self):
     pass
-def OP_Fx0A():
+def OP_Fx0A(self):
     pass
-def OP_Fx15():
+def OP_Fx15(self):
     pass
-def OP_Fx18():
+def OP_Fx18(self):
     pass
-def OP_Fx1E():
+def OP_Fx1E(self, b):
+    self.Index += self.V[b]
+    self.Program_Counter += 2
+def OP_Fx29(self):
     pass
-def OP_Fx29():
+def OP_Fx33(self):
     pass
-def OP_Fx33():
+def OP_Fx55(self):
     pass
-def OP_Fx55():
-    pass
-def OP_Fx65():
+def OP_Fx65(self):
     pass
