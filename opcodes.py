@@ -1,26 +1,51 @@
 # opcodes
 
-def OP_00E0(): # clears screen matrix
-    print("screen cleared!")
-    pass
-def OP_00EE():
+def OP_00E0(self): # clears screen matrix
+    print('cleared screen!')
+    for row in self.screen:
+        for i in range(len(row)):
+            row[i] = 0
+    self.Program_Counter += 2
+
+def OP_00EE(self):
     print('returned from subroutine!')
+    self.Program_Counter += 2
+
+def OP_1nnn(self, a):
+    self.Program_Counter = a & 0xFFF
+
+def OP_2nnn(self):
     pass
 
-def OP_1nnn():
-    pass
-def OP_2nnn():
-    pass
-def OP_3xkk():
-    pass
-def OP_4xkk():
-    pass
-def OP_5xy0():
-    pass
-def OP_6xkk():
-    pass
-def OP_7xkk():
-    pass
+def OP_3xkk(self, x, op):
+    val = op & 0xFF
+    if self.V[x] == val:
+        self.Program_Counter += 4
+    else:
+        self.Program_Counter += 2
+
+def OP_4xkk(self, x, op):
+    val = op & 0xFF
+    if self.V[x] != val:
+        self.Program_Counter += 4
+    else:
+        self.Program_Counter += 2
+
+def OP_5xy0(self, x, y):
+    if self.V[x] == self.V[y]:
+        self.Program_Counter += 4
+    else:
+        self.Program_Counter += 2
+
+def OP_6xkk(self, x, op):
+    val = op & 0xFF
+    self.V[x] = val
+    self.Program_Counter += 2
+
+def OP_7xkk(self, x, op):
+    val = op & 0xFF
+    self.V[x] = (self.V[x] + val) & 0xFF
+    self.Program_Counter += 2
 
 def OP_8xy0():
     pass
@@ -41,16 +66,34 @@ def OP_8xy7():
 def OP_8xyE():
     pass
 
-def OP_9xy0():
-    pass
-def OP_Annn():
-    pass
+def OP_9xy0(self, x, y):
+    if self.V[x] != self.V[y]:
+        self.Program_Counter += 4
+    else:
+        self.Program_Counter += 2
+
+def OP_Annn(self, op):
+    self.Index = op & 0xFFF
+    self.Program_Counter += 2
 def OP_Bnnn():
     pass
 def OP_Cxkk():
     pass
-def OP_Dxyn():
-    pass
+def OP_Dxyn(self, b, c, d):
+    self.V[0xF] = 0
+    for row in range(d):
+        sprite_byte = self.memory[self.Index + row]
+        for bit in range(8):
+            x = (self.V[b] + bit) % 64
+            y = (self.V[c] + row) % 32
+            pixel_bit = (sprite_byte >> (7 - bit)) & 1
+
+            if pixel_bit == 1:
+                if self.screen[y][x] == 1:
+                    self.V[0xF] = 1  # collision detected
+                self.screen[y][x] ^= 1
+
+    self.Program_Counter += 2
 def OP_Ex9E():
     pass
 def OP_ExA1():
